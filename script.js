@@ -2,29 +2,26 @@
 let args = new Array(3);
 
 function operate(firstNum, operator, secondNum) {
+    let first = parseFloat(firstNum);
+    let second = parseFloat(secondNum);
     switch(operator) {
         case "+":
-            return firstNum + secondNum;
+            return first + second;
         case "-":
-            return firstNum - secondNum;
+            return first - second;
         case "*":
-            return firstNum * secondNum;
+            return first * second;
         case "/":
-            return firstNum / secondNum;
+            return first / second;
     }
 }
 
 const display = document.querySelector("#displayed-input");
-const input = document.querySelector(".input.container");
+const input = document.querySelector(".button.container");
 
 // button functionality 
 input.addEventListener('click', (event) => {
     let target = event.target;
-    
-    // get rid of initial zero on display
-    if (display.innerText == "0") {
-        display.innerText = "";
-    }
 
     // update display text only if no overflow 
     // 10 digit display; 1 digit saved for operator
@@ -35,29 +32,19 @@ input.addEventListener('click', (event) => {
     }
 
     // apply operators 
-    else if (target.class == "operator") {
-        if (args[0] != undefined) {
-            switch(target.value) {  
-                case '/': 
-                    args[1] = display.innerText = '/'; 
-                    break;
-                case '*':
-                    args[1] = display.innerText = '*'; 
-                    break;
-                case '-':
-                    args[1] = display.innerText = '-'; 
-                    break;
-                case '+':
-                    if (args[2] == undefined) {
-                        args[1] = display.innerText = '+'; 
-                        break;
-                    }
-                    else {
-                        display.innerText = operate(args);
-                    }
-                    
+    else if (target.classList.contains("operator")) {
+        if ( args[0] == undefined && (/\d/.test(display.innerText)) ) {
+                args[0] = display.innerText;
+                args[1] = display.innerText = target.value;
+                doNotClear(target);
+                display.innerText = "";
             }
-            doNotClear(target);
+        else if ( args[2] == undefined && 
+        (/\d/.test(display.innerText)) ) {
+            args[2] = display.innerText;
+            let heldValue = operate(args[0], args[1], args[2]);
+            reset(target);
+            args[0] = display.innerText = heldValue;
         }
         else {
             reset(target);
@@ -78,16 +65,14 @@ input.addEventListener('click', (event) => {
     }
 })
 
-// backspace helper fx
+// reset helper fxs
 function doNotClear(target){
     if (target.clicks == "clicked") {
         target.clicks = "none"
     }
 }
-
-// reset helper fx
 function reset(target) {
-    display.innerText = "0";
+    display.innerText = "";
     target.clicks = "none";
     args = new Array(3);
 }
