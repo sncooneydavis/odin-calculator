@@ -19,7 +19,7 @@ Displayed result is rounded, such that all digits can be contained on the displa
 | 1 | 2 | 3 | / |
 | 4 | 5 | 6 | * |
 | 7 | 8 | 9 | - |
-| <-| 0 | . |+/=|
+| 0 | . | <-|+/=|
 
 *`style.css`* contains CSS for calculator styling
 
