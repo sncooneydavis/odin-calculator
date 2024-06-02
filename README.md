@@ -14,12 +14,17 @@ Displayed result is rounded, such that all digits can be contained on the displa
 ## File Structure
 *`index.html`* contains HTML for calculator display structure
 - display
+
+| Display-Input  |
+| Display-Output |
+
 - buttons: numbers (10), operators (4),`.`, `=`, `BACK/CLEAR`
 
 | 1 | 2 | 3 | / |
 | 4 | 5 | 6 | * |
 | 7 | 8 | 9 | - |
-| 0 | . | <-|+/=|
+| 0 | . | = | + |
+| Back  | Clear |
 
 *`style.css`* contains CSS for calculator styling
 

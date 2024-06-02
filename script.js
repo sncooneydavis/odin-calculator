@@ -1,124 +1,165 @@
+// ElEMENT SELECTORS
+const displayedInput = document.querySelector("#displayed-input");
+const displayedOutput = document.querySelector("#displayed-output");
+const buttonInput = document.querySelector(".button.container");
+
 // total digits of display 
 const digitsAllowed = 10;
 
 // hold args for operate(number + operator + number)
 let args = new Array(3);
 
-function operate(firstNum, operator, secondNum) {
-    let first = parseFloat(firstNum);
-    let second = parseFloat(secondNum);
-    switch(operator) {
-        case "+":
-            return first + second;
-        case "-":
-            return first - second;
-        case "*":
-            return first * second;
-        case "/":
-            return (first / second).toFixed(5);
-    }
-}
-
-const display = document.querySelector("#displayed-input");
-const input = document.querySelector(".button.container");
+// debounce handling
 let debounceTimer;
 
 // input types: #, operator, '.', or 'backspace'
-input.addEventListener('click', (event) => {
+buttonInput.addEventListener('click', (event) => {
     let target = event.target;
-    
+
+    if (!target.matches('button')) return;
+
     // debounce input handling
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-        if ( (!isNaN(+target.value) || target.value === '.') && 
-        display.innerText.length < 9) {
-            handleNumbers(target);
+
+        if ( (target.classList.contains("number") || 
+        target.classList.contains("decimal") ) && 
+        displayedInput.innerText.length < digitsAllowed) {
+            handleNumber(target);
         }
         else if (target.classList.contains("operator")) {
             handleOperator(target);
         }
-        else if (target.classList.contains("BACK")) {
-            handleBackspace(target); 
+        else if (target.classList.contains("bottom")) {
+            handleDelete(target); 
         }
-    }, 50);
-});
-    
-// no overflow: 10 digit display, 1 digit saved for operator
-function handleNumbers(target) {
-    // when an operator is on display
-    // clear operator 
-    if ( /[*/+\-]/.test(display.innerText)) {
-        display.innerText = display.innerText.slice(1);
-    }
-    // when result of operate() is on the screen
-    // clear screen before adding new number
-    if (args[1] != undefined) {
-        display.innerText = "";
-    }
+        else if (target.classList.contains("equals")) {
+            handleEquals();
+        }
+        else {
+            clearDisplay();
+        }
 
-    display.innerText += target.value;
-    doNotClearDisplay(target);
+    }, 2000);
+});
+
+function handleNumber(target) {
+
+    if (displayedInput.innerText >= digitsAllowed) {
+        displayOverflowMsg();
+        return;
+    }
+    if (displayedInput.innerText == "0") {
+        if (target.value != ".") {
+            displayedInput.innerText = target.value;
+        }
+        else {
+            displayedInput.innerText += target.value;
+        }
+    }
 }
 
 function handleOperator(target) {
-     // when firstNum has been entered on display but not saved to args
-     if ( args[0] == undefined && (/\d/.test(display.innerText)) ) {
-        args[0] = display.innerText;
-        args[1] = target.id;
-        display.innerText = target.id;
-        doNotClearDisplay(target);
+
+     // when args[] is empty
+     if ( args[0] == undefined && (/[1-9]/.test(displayedInput.innerText)) ) {
+       
+        args[0] = displayedInput.innerText;
+        args[1] = target.value;
+
+        displayedInput.innerText += target.value;
     }
-    // when firstNum and operator have been saved to args[], but second number is only entered on display
-    // call operate()
-    else if ( args[2] == undefined && 
-        (/\d/.test(display.innerText)) ) {
-            args[2] = display.innerText;
-            let heldValue = operate(args[0], args[1], args[2]).toString();
-            clearDisplay(target);
-            if (heldValue.length > digitsAllowed) {
-                alert("Digit Overflow");
-                return;
-            }
-            else {
-                args[0] = heldValue;
-                display.innerText = heldValue;
-                args[1] = target.id;
-            }   
+
+    // when args[] contains firstNum and operator, while secondNum is held in display-input
+    else if (args[2] == undefined && (/[*/+\-]\d/.test(displayedInput.innerText))) {
+        args[2] = extractNumTwo(displayedInput.innerText);
+    
+        let answerStr = operate(args[0], args[1], args[2]).toString();
+        displayAnswer(answerStr);
     }
-    // when operate() has been called and its result will be used in another calculation 
-    else if (args[0] != undefined) {
-        args[1] = target.id;
-        display.innerText = target.id;
-        doNotClearDisplay(target);
+              
+    // when args[] contains firstNum and operator, but secondNum is NOT held in display-input (i.e. two operators clicked in succession)
+    else if (args[2] == undefined && (/\d+[+\-*/](?!\d)/.test(displayedInput.innerText))) {
+            
+        displayedInput.innerText.slice(0, -1);
+        displayedInput.innerText += target.value;
+        let operatorRegEx = /[+\-*/]/;
+        args[1] = operatorRegEx.exec(input)[0];
     }
-    // bad entry (decimal only, operator selected in wrong order)
+
+    // when bad entry (decimal only, operator selected first)
     else {
-        clearDisplay(target);
-    }
-}
-function handleBackspace(target) {
-    // if BACK button clicked once, delete last digit
-    if (target.clicks == "none") {
-        display.innerText = display.innerText.slice(0, -1);
-        target.clicks = "clicked";
-    }
-    // if BACK button double-clicked, clearDisplay display
-    else {             
-        clearDisplay(target);
+        clearDisplay();
     }
 }
 
-// clearDisplay helper fxs
-function doNotClearDisplay(target){
-    if (target.clicks == "clicked") {
-        target.clicks = "none"
+function handleDelete(target) {
+    if (target.id == "backspace") {
+        displayedInput.innerText.slice(0, -1);
+    }
+    else if (target.id == "clear") {
+        clearDisplay();
     }
 }
-function clearDisplay(target) {
-    display.innerText = "";
-    target.clicks = "none";
+
+function handleEquals() {
+    // when args[] contains firstNum and operator, while secondNum is held in display-input 
+    if (args[2] == undefined && (/[*/+\-]\d/.test(displayedInput.innerText))) {
+        
+        args[2] = extractNumTwo(displayedInput.innerText);
+
+        let answerStr = operate(args[0], args[1], args[2]).toString();
+        displayAnswer(answerStr);
+        args = new Array(3);
+    }
+}
+
+function extractNumTwo(input) {
+    let operatorRegEx = /[+\-*/]/;
+    let numTwoFromStr = operatorRegEx.exec(input);
+    return input.substring(numTwoFromStr.index + 1);
+}
+
+function operate(firstNum, operator, secondNum) {
+
+    let first = parseFloat(firstNum);
+    let second = parseFloat(secondNum);
+
+    switch(operator) {
+        case "+":
+            return (first + second);
+        case "-":
+            return (first - second);
+        case "*":
+            return (first * second);
+        case "/":
+            return (first / second).toFixed(3);
+    }
+}
+
+function displayAnswer (answerStr) {
+  
+        if (answerStr.length > digitsAllowed) {
+            displayOverflowMsg();
+            return;
+        }
+        else {
+            displayedOutput.innerText = answerStr;
+            args[0] = answerStr;
+            args[1] = target.value;
+            args[2] = "";
+            return;
+        } 
+}
+
+function displayOverflowMsg() {
+    displayedOutput.innerText = "OVERFLOW";
+    displayedInput.innerText = "press CLEAR to continue";
+}
+
+function clearDisplay() {
+    displayedInput.innerText = "0";
+    displayedOutput.innerText = "";
     args = new Array(3);
 }
-
-
 

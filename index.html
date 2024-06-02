@@ -5,32 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="./script.js" defer></script>
     <style src="./style.css" rel="stylesheet"></style>
-    <title>Document</title>
+    <title>Calculate!</title>
 </head>
 <body>
     <div class="main container">
         <div class="calculator container">
-            <div id="displayed-input"></div>
-            <div class="button container">
-               <!-- group in rows of four -->
-                <input type="button" class="button" value="1">
-                <input type="button" class="button" value="2">
-                <input type="button" class="button" value="3">
-                <input type="button" class="operator button" id="/" value="/">
-                <input type="button" class="button" value="4">
-                <input type="button" class="button" value="5">
-                <input type="button" class="button" value="6">
-                <input type="button" class="operator button" id="*" value="*">
-                <input type="button" class="button" value="7">
-                <input type="button" class="button" value="8">
-                <input type="button" class="button" value="9">
-                <input type="button" class="operator button" id="-" value="-">
-                <input type="button" class="button" value="0">
-                <input type="button" class=" operator button" value=".">
-                <input type="button" class="button back" value="BACK" 
-                clicks = "none">
-                <input type="button" class="operator button" id="+"
-                value="+/=">     
+            <div class="display container">
+                <div id="displayed-input">0</div>
+                <div id="displayed-output"></div>
+            </div>
+            
+            <div class="button container" clicks = "none">
+               
+                <div class="row-1">
+                    <input type="button" class="number button" value="1">
+                    <input type="button" class="number button" value="2">
+                    <input type="button" class="number button" value="3">
+                    <input type="button" class="operator button" value="/">
+                </div>
+                
+                <div class="row-2">
+                    <input type="button" class="number button" value="4">
+                    <input type="button" class="number button" value="5">
+                    <input type="button" class="number button" value="6">
+                    <input type="button" class="operator button" value="*">
+                </div>
+                
+                <div class="row-3">
+                    <input type="button" class="number button" value="7">
+                    <input type="button" class="number button" value="8">
+                    <input type="button" class="number button" value="9">
+                    <input type="button" class="operator button" value="-">
+                </div>
+                
+                <div class="row-4">
+                    <input type="button" class="number button" value="0">
+                    <input type="button" class="decimal button" value=".">
+                    <input type="button" class="equals button" value="=" 
+                    >
+                    <input type="button" class="operator button"
+                    value="+">  
+                </div>
+                
+                <div class="bottom-row">
+                    <input type="button" class="bottom button" id="backspace" value="&#x232B">
+                    <input type="button" class="bottom button" id="clear" value="&#9249">
+                </div>
+
             </div>
         </div>
     </div>
