@@ -45,6 +45,12 @@ function handleNumber(target) {
 
     // start entering firstNum
     if (displayedFirstNum.innerText == "###") {
+
+        // after displayOverflowMessage()
+        if (displayedOperator.innerHTML == "&#128565") {
+            displayedOperator.innerHTML = "";
+            displayedOperator.innerText = "?";
+        }
        
         // display decimals correctly 
         if (target.value != ".") {
@@ -100,8 +106,8 @@ function handleNumber(target) {
 
 function handleOperator(target) {
 
-     // when args[] is empty
-     if ( args[0] == undefined && (displayedFirstNum != "###") ) {
+     // when args[] is empty and firstNum is displayed
+     if ( args[0] == undefined && (displayedFirstNum.innerText != "###") ) {
        
         args[0] = displayedFirstNum.innerText;
         args[1] = target.value;
@@ -109,28 +115,56 @@ function handleOperator(target) {
         displayedOperator.innerText = target.value;
     }
 
-    // when args[] contains up to firstNum 
+    // when args[] is empty and firstNum not displayed
+    if ( args[0] == undefined && (displayedFirstNum.innerText == "###") ) {
+        clearDisplay();
+    }
+
+    // when args[] firstNum only
     else if ( (args[0] != undefined) && 
-    (args[1] == undefined || args[1] == "") ) {
+    ((args[1] == undefined) || (args[1]=="")) ) {
         args[1] = target.value;
         displayedOperator.innerText = target.value;
     }
     
     // when secondNum is in display and args[] contains up to operator
-    else if ( (!/[1-9]/.test(args[2])) && 
+    else if ( (args[2] == undefined || args[2] == "") && 
     (/\d/.test(displayedSecondNum.innerText)) ) {
         
         args[2] = displayedSecondNum.innerText;
-    
+
+        // no dividing by zero
+        if ( (args[1] == '/') && (args[2] == '0') ) {
+            displayOverflowMsg();
+            return;
+        }
         let answerStr = operate(args[0], args[1], args[2]);
         clearDisplay();
         displayAnswer(answerStr);
         args[1] = target.value;
         displayedOperator.innerText = target.value;
     }
+}
 
-    // when bad entry (decimal only, operator selected first)
-    else {
+function handleEquals() {
+    // when args[] contains firstNum and operator, while secondNum is in display
+    if ( (args[2] == undefined || args[2] == "") && 
+    (displayedSecondNum.innerText != "###")) {
+        
+        args[2] = displayedSecondNum.innerText;
+
+        // no dividing by zero
+        if ( (args[1] == '/') && (args[2] == '0') ) {
+            displayOverflowMsg();
+            return;
+        }
+
+        let answerStr = operate(args[0], args[1], args[2]);
+        clearDisplay();
+        displayAnswer(answerStr);
+    }
+    // (edge case) when equals is pressed before secondNum is in display
+    else if (displayedSecondNum.innerText == "###" ) {
         clearDisplay();
     }
 }
@@ -152,28 +186,12 @@ function handleDelete(target) {
             args[1] = "";
         }
         // delete last entry for secondNum
-        if (displayedSecondNum.innerText != "###") {
-            displayedSecondNum.innerText = displayedSecondNum.innerText.slice(0, -1);
+        else if (displayedSecondNum.innerText != "###") {
+            displayedSecondNum.innerText = 
+            displayedSecondNum.innerText.slice(0, -1);
         }
     }
     else if (target.id == "clear") {
-        clearDisplay();
-    }
-}
-
-function handleEquals() {
-    // when args[] contains firstNum and operator, while secondNum is in display
-    if ( (args[2] == undefined || args[2] == "") && 
-    (displayedSecondNum.innerText != "###")) {
-        
-        args[2] = displayedSecondNum.innerText;
-
-        let answerStr = operate(args[0], args[1], args[2]);
-        clearDisplay();
-        displayAnswer(answerStr);
-    }
-    // (edge case) when equals is pressed before secondNum is in display
-    else if (displayedSecondNum.innerText == "###" ) {
         clearDisplay();
     }
 }
@@ -195,10 +213,6 @@ function operate(firstNum, operator, secondNum) {
             possibleFloat = first * second;
             break;
         case "/":
-            if (second == 0) {
-                displayedFirstNum.innerHTML = "&#128561";
-                return; 
-            }
             possibleFloat = first / second;
             break;
     }
@@ -208,14 +222,17 @@ function operate(firstNum, operator, secondNum) {
 function checkSize(possibleFloat) {
     
     if (Number.isInteger(possibleFloat) && 
-    possibleFloat.length > digitsAllowed) {
+    possibleFloat.toString().length > digitsAllowed) {
         displayOverflowMsg();
+        return;
     }
 
     else if (!Number.isInteger(possibleFloat)) {
         let integerPartLen = possibleFloat.toString().match(/^[^.]*/).length;
+        
         if (integerPartLen > digitsAllowed) {
             displayOverflowMsg();
+            return;
         }
         // calc how many digits left for decimal places
         let spacesAvailable = digitsAllowed - integerPartLen;
@@ -223,34 +240,30 @@ function checkSize(possibleFloat) {
         // remove trailing zeros
         return fixedFloat.toString().replace(/(\.\d*?[1-9])0+$/, '$1');
     }
+    // possibleFloat is both an integer and < digitsAllowed
     return possibleFloat;
 }
 
 function displayAnswer (answerStr) {
-  
-        if (answerStr.length > digitsAllowed*2) {
-            displayOverflowMsg();
-            return;
-        }
-        else {
+
             displayedFirstNum.innerText = answerStr;
             args[0] = answerStr;
             args[1] = "";
             args[2] = "";
-            return;
-        } 
-}
+} 
 
 function displayOverflowMsg() {
-    displayedFirstNum.innerHTML = "&#128565";
-    displayedOperator.innerText = "";
-    displayedSecondNum.innerText = "OVERFLOW";
+    clearDisplay();
+    displayedFirstNum.innerText = "###";
+    displayedOperator.innerHTML = "&#128565";
+    displayedSecondNum.innerText = "###";
 }
 
 function clearDisplay() {
     displayedFirstNum.innerText = "###";
-    displayedSecondNum.innerText = "###";
     displayedOperator.innerText = "?";
+    displayedSecondNum.innerText = "###";
+
     args = new Array(3);
 }
 
