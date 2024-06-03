@@ -1,10 +1,11 @@
 // ElEMENT SELECTORS
-const displayedInput = document.querySelector("#displayed-input");
-const displayedOutput = document.querySelector("#displayed-output");
+const displayedFirstNum = document.querySelector("#displayed-firstNum");
+const displayedOperator = document.querySelector("#displayed-operator");
+const displayedSecondNum = document.querySelector("#displayed-secondNum");
 const buttonInput = document.querySelector(".button.container");
 
 // total digits of display 
-const digitsAllowed = 10;
+const digitsAllowed = 6;
 
 // hold args for operate(number + operator + number)
 let args = new Array(3);
@@ -16,15 +17,12 @@ let debounceTimer;
 buttonInput.addEventListener('click', (event) => {
     let target = event.target;
 
-    if (!target.matches('button')) return;
-
     // debounce input handling
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
 
         if ( (target.classList.contains("number") || 
-        target.classList.contains("decimal") ) && 
-        displayedInput.innerText.length < digitsAllowed) {
+        target.classList.contains("decimal")) ) {
             handleNumber(target);
         }
         else if (target.classList.contains("operator")) {
@@ -40,51 +38,95 @@ buttonInput.addEventListener('click', (event) => {
             clearDisplay();
         }
 
-    }, 2000);
+    }, 200);
 });
 
 function handleNumber(target) {
 
-    if (displayedInput.innerText >= digitsAllowed) {
-        displayOverflowMsg();
+    // start entering firstNum
+    if (displayedFirstNum.innerText == "#") {
+       
+        // display decimals correctly 
+        if (target.value != ".") {
+            displayedFirstNum.innerText = target.value;
+        }
+        else if (target.value == ".") {
+            displayedFirstNum.innerText = "0" + target.value;
+        }
         return;
     }
-    if (displayedInput.innerText == "0") {
-        if (target.value != ".") {
-            displayedInput.innerText = target.value;
+    // continue entering firstNum
+    else if ( (displayedFirstNum.innerText != "#") && 
+    (displayedOperator.innerText == "?") ) {
+        
+        // when user types too many digits
+        if (displayedFirstNum.innerText.length >= digitsAllowed) {
+            displayOverflowMsg();
         }
         else {
-            displayedInput.innerText += target.value;
+            displayedFirstNum.innerText += target.value;
         }
+        return;
+    }
+    // start entering secondNum
+    else if (( displayedSecondNum.innerText == "#") &&
+    (displayedOperator.innerText != "?") ) {
+       
+        // display decimals correctly
+        if (target.value != ".") {
+            displayedSecondNum.innerText = target.value;
+        }
+        else if (target.value == ".") {
+            displayedSecondNum.innerText = "0" + target.value;
+        }
+        return;
+    }
+    // continue entering secondNum
+    else if (displayedSecondNum.innerText != "#") {
+        
+        // when user types too many digits
+        if (displayedSecondNum.innerText.length >= digitsAllowed) {
+            displayOverflowMsg();
+        }
+        else {
+            displayedSecondNum.innerText += target.value;
+        }
+        return;
+    }
+    else {
+        console.log("error from entering number unaccounted for");
     }
 }
 
 function handleOperator(target) {
 
      // when args[] is empty
-     if ( args[0] == undefined && (/[1-9]/.test(displayedInput.innerText)) ) {
+     if ( args[0] == undefined && (displayedFirstNum != "#") ) {
        
-        args[0] = displayedInput.innerText;
+        args[0] = displayedFirstNum.innerText;
         args[1] = target.value;
 
-        displayedInput.innerText += target.value;
+        displayedOperator.innerText = target.value;
     }
 
-    // when args[] contains firstNum and operator, while secondNum is held in display-input
-    else if (args[2] == undefined && (/[*/+\-]\d/.test(displayedInput.innerText))) {
-        args[2] = extractNumTwo(displayedInput.innerText);
-    
-        let answerStr = operate(args[0], args[1], args[2]).toString();
-        displayAnswer(answerStr);
+    // when args[] contains up to firstNum 
+    else if ( (args[0] != undefined) && 
+    (args[1] == undefined || args[1] == "") ) {
+        args[1] = target.value;
+        displayedOperator.innerText = target.value;
     }
-              
-    // when args[] contains firstNum and operator, but secondNum is NOT held in display-input (i.e. two operators clicked in succession)
-    else if (args[2] == undefined && (/\d+[+\-*/](?!\d)/.test(displayedInput.innerText))) {
-            
-        displayedInput.innerText.slice(0, -1);
-        displayedInput.innerText += target.value;
-        let operatorRegEx = /[+\-*/]/;
-        args[1] = operatorRegEx.exec(input)[0];
+    
+    // when secondNum is in display and args[] contains up to operator
+    else if ( (!/[1-9]/.test(args[2])) && 
+    (/\d/.test(displayedSecondNum.innerText)) ) {
+        
+        args[2] = displayedSecondNum.innerText;
+    
+        let answerStr = operate(args[0], args[1], args[2]);
+        clearDisplay();
+        displayAnswer(answerStr);
+        args[1] = target.value;
+        displayedOperator.innerText = target.value;
     }
 
     // when bad entry (decimal only, operator selected first)
@@ -95,7 +137,25 @@ function handleOperator(target) {
 
 function handleDelete(target) {
     if (target.id == "backspace") {
-        displayedInput.innerText.slice(0, -1);
+        // delete last entry for firstNum
+        if (displayedOperator.innerText == "?") {
+            displayedFirstNum.innerText = 
+            displayedFirstNum.innerText.slice(0, -1);
+            if (/[1-9]/.test(args[0])) {
+                args[0] = args[0].toString().slice(0, -1);
+            }
+        }
+        // delete operator
+        else if ( (displayedOperator.innerText != "?") &&
+        (displayedSecondNum == "#") ) {
+            displayedOperator.innerText == "?";
+            args[1] = "";
+        }
+        // delete last entry for secondNum
+        if (displayedSecondNum.innerText != "#") {
+            displayedSecondNum.innerText = displayedSecondNum.innerText.slice(0, -1);
+        }
+
     }
     else if (target.id == "clear") {
         clearDisplay();
@@ -104,20 +164,15 @@ function handleDelete(target) {
 
 function handleEquals() {
     // when args[] contains firstNum and operator, while secondNum is held in display-input 
-    if (args[2] == undefined && (/[*/+\-]\d/.test(displayedInput.innerText))) {
+    if ( (args[2] == undefined || args[2] == "") && 
+    (displayedSecondNum.innerText != "")) {
         
-        args[2] = extractNumTwo(displayedInput.innerText);
+        args[2] = displayedSecondNum.innerText;
 
-        let answerStr = operate(args[0], args[1], args[2]).toString();
+        let answerStr = operate(args[0], args[1], args[2]);
+        clearDisplay();
         displayAnswer(answerStr);
-        args = new Array(3);
     }
-}
-
-function extractNumTwo(input) {
-    let operatorRegEx = /[+\-*/]/;
-    let numTwoFromStr = operatorRegEx.exec(input);
-    return input.substring(numTwoFromStr.index + 1);
 }
 
 function operate(firstNum, operator, secondNum) {
@@ -127,39 +182,40 @@ function operate(firstNum, operator, secondNum) {
 
     switch(operator) {
         case "+":
-            return (first + second);
+            return first + second;
         case "-":
-            return (first - second);
+            return first - second;
         case "*":
-            return (first * second);
+            return (first * second).toFixed(2);
         case "/":
-            return (first / second).toFixed(3);
+            return (first / second).toFixed(2);
     }
 }
 
 function displayAnswer (answerStr) {
   
-        if (answerStr.length > digitsAllowed) {
+        if (answerStr.length > digitsAllowed*2) {
             displayOverflowMsg();
             return;
         }
         else {
-            displayedOutput.innerText = answerStr;
+            displayedFirstNum.innerText = answerStr;
             args[0] = answerStr;
-            args[1] = target.value;
+            args[1] = "";
             args[2] = "";
             return;
         } 
 }
 
 function displayOverflowMsg() {
-    displayedOutput.innerText = "OVERFLOW";
-    displayedInput.innerText = "press CLEAR to continue";
+    displayedFirstNum.innerText = "OVERFLOW";
+    displayedSecondNum.innerText = "press DEL";
 }
 
 function clearDisplay() {
-    displayedInput.innerText = "0";
-    displayedOutput.innerText = "";
+    displayedFirstNum.innerText = "#";
+    displayedSecondNum.innerText = "#";
+    displayedOperator.innerText = "?";
     args = new Array(3);
 }
 
