@@ -5,7 +5,7 @@ const displayedSecondNum = document.querySelector("#displayed-secondNum");
 const buttonInput = document.querySelector(".button.container");
 
 // total digits of display 
-const digitsAllowed = 6;
+const digitsAllowed = 8;
 
 // hold args for operate(number + operator + number)
 let args = new Array(3);
@@ -13,7 +13,7 @@ let args = new Array(3);
 // debounce handling
 let debounceTimer;
 
-// input types: #, operator, '.', or 'backspace'
+// input types: ###, operator, '.', or 'backspace'
 buttonInput.addEventListener('click', (event) => {
     let target = event.target;
 
@@ -44,7 +44,7 @@ buttonInput.addEventListener('click', (event) => {
 function handleNumber(target) {
 
     // start entering firstNum
-    if (displayedFirstNum.innerText == "#") {
+    if (displayedFirstNum.innerText == "###") {
        
         // display decimals correctly 
         if (target.value != ".") {
@@ -56,7 +56,7 @@ function handleNumber(target) {
         return;
     }
     // continue entering firstNum
-    else if ( (displayedFirstNum.innerText != "#") && 
+    else if ( (displayedFirstNum.innerText != "###") && 
     (displayedOperator.innerText == "?") ) {
         
         // when user types too many digits
@@ -69,7 +69,7 @@ function handleNumber(target) {
         return;
     }
     // start entering secondNum
-    else if (( displayedSecondNum.innerText == "#") &&
+    else if (( displayedSecondNum.innerText == "###") &&
     (displayedOperator.innerText != "?") ) {
        
         // display decimals correctly
@@ -82,7 +82,7 @@ function handleNumber(target) {
         return;
     }
     // continue entering secondNum
-    else if (displayedSecondNum.innerText != "#") {
+    else if (displayedSecondNum.innerText != "###") {
         
         // when user types too many digits
         if (displayedSecondNum.innerText.length >= digitsAllowed) {
@@ -101,7 +101,7 @@ function handleNumber(target) {
 function handleOperator(target) {
 
      // when args[] is empty
-     if ( args[0] == undefined && (displayedFirstNum != "#") ) {
+     if ( args[0] == undefined && (displayedFirstNum != "###") ) {
        
         args[0] = displayedFirstNum.innerText;
         args[1] = target.value;
@@ -147,15 +147,14 @@ function handleDelete(target) {
         }
         // delete operator
         else if ( (displayedOperator.innerText != "?") &&
-        (displayedSecondNum == "#") ) {
+        (displayedSecondNum == "###") ) {
             displayedOperator.innerText == "?";
             args[1] = "";
         }
         // delete last entry for secondNum
-        if (displayedSecondNum.innerText != "#") {
+        if (displayedSecondNum.innerText != "###") {
             displayedSecondNum.innerText = displayedSecondNum.innerText.slice(0, -1);
         }
-
     }
     else if (target.id == "clear") {
         clearDisplay();
@@ -163,9 +162,9 @@ function handleDelete(target) {
 }
 
 function handleEquals() {
-    // when args[] contains firstNum and operator, while secondNum is held in display-input 
+    // when args[] contains firstNum and operator, while secondNum is in display
     if ( (args[2] == undefined || args[2] == "") && 
-    (displayedSecondNum.innerText != "")) {
+    (displayedSecondNum.innerText != "###")) {
         
         args[2] = displayedSecondNum.innerText;
 
@@ -173,23 +172,58 @@ function handleEquals() {
         clearDisplay();
         displayAnswer(answerStr);
     }
+    // (edge case) when equals is pressed before secondNum is in display
+    else if (displayedSecondNum.innerText == "###" ) {
+        clearDisplay();
+    }
 }
 
 function operate(firstNum, operator, secondNum) {
 
     let first = parseFloat(firstNum);
     let second = parseFloat(secondNum);
+    let possibleFloat;
 
     switch(operator) {
         case "+":
-            return first + second;
+            possibleFloat = first + second;
+            break;
         case "-":
-            return first - second;
+            possibleFloat = first - second;
+            break;
         case "*":
-            return (first * second).toFixed(2);
+            possibleFloat = first * second;
+            break;
         case "/":
-            return (first / second).toFixed(2);
+            if (second == 0) {
+                displayedFirstNum.innerHTML = "&#128561";
+                return; 
+            }
+            possibleFloat = first / second;
+            break;
     }
+    return checkSize(possibleFloat);
+}
+
+function checkSize(possibleFloat) {
+    
+    if (Number.isInteger(possibleFloat) && 
+    possibleFloat.length > digitsAllowed) {
+        displayOverflowMsg();
+    }
+
+    else if (!Number.isInteger(possibleFloat)) {
+        let integerPartLen = possibleFloat.toString().match(/^[^.]*/).length;
+        if (integerPartLen > digitsAllowed) {
+            displayOverflowMsg();
+        }
+        // calc how many digits left for decimal places
+        let spacesAvailable = digitsAllowed - integerPartLen;
+        let fixedFloat = possibleFloat.toFixed(spacesAvailable);
+        // remove trailing zeros
+        return fixedFloat.toString().replace(/(\.\d*?[1-9])0+$/, '$1');
+    }
+    return possibleFloat;
 }
 
 function displayAnswer (answerStr) {
@@ -208,13 +242,14 @@ function displayAnswer (answerStr) {
 }
 
 function displayOverflowMsg() {
-    displayedFirstNum.innerText = "OVERFLOW";
-    displayedSecondNum.innerText = "press DEL";
+    displayedFirstNum.innerHTML = "&#128565";
+    displayedOperator.innerText = "";
+    displayedSecondNum.innerText = "OVERFLOW";
 }
 
 function clearDisplay() {
-    displayedFirstNum.innerText = "#";
-    displayedSecondNum.innerText = "#";
+    displayedFirstNum.innerText = "###";
+    displayedSecondNum.innerText = "###";
     displayedOperator.innerText = "?";
     args = new Array(3);
 }
