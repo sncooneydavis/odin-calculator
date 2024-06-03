@@ -13,7 +13,7 @@ let args = new Array(3);
 // debounce handling
 let debounceTimer;
 
-// input types: ###, operator, '.', or 'backspace'
+// input types: ###, operator, '.', 'backspace,' or 'DELETE'
 buttonInput.addEventListener('click', (event) => {
     let target = event.target;
 
@@ -34,75 +34,69 @@ buttonInput.addEventListener('click', (event) => {
         else if (target.classList.contains("equals")) {
             handleEquals();
         }
-        else {
-            clearDisplay();
-        }
 
-    }, 200);
+    }, 100);
 });
 
 function handleNumber(target) {
 
-    // start entering firstNum
+    // enter firstNum in display
     if (displayedFirstNum.innerText == "###") {
 
         // after displayOverflowMessage()
-        if (displayedOperator.innerHTML == "&#128565") {
-            displayedOperator.innerHTML = "";
-            displayedOperator.innerText = "?";
+        if (displayedOperator.innerText == "😵") {
+            clearDisplay();
         }
-       
-        // display decimals correctly 
-        if (target.value != ".") {
-            displayedFirstNum.innerText = target.value;
-        }
-        else if (target.value == ".") {
-            displayedFirstNum.innerText = "0" + target.value;
-        }
-        return;
+
+        startEnteringNum(target, displayedFirstNum);
     }
-    // continue entering firstNum
+
+    // continue entering firstNum in display
     else if ( (displayedFirstNum.innerText != "###") && 
     (displayedOperator.innerText == "?") ) {
-        
-        // when user types too many digits
-        if (displayedFirstNum.innerText.length >= digitsAllowed) {
-            displayOverflowMsg();
-        }
-        else {
-            displayedFirstNum.innerText += target.value;
-        }
-        return;
+        continueEnteringNum(target, displayedFirstNum);
     }
-    // start entering secondNum
+
+    // start entering secondNum in display
     else if (( displayedSecondNum.innerText == "###") &&
     (displayedOperator.innerText != "?") ) {
-       
-        // display decimals correctly
-        if (target.value != ".") {
-            displayedSecondNum.innerText = target.value;
-        }
-        else if (target.value == ".") {
-            displayedSecondNum.innerText = "0" + target.value;
-        }
-        return;
+        startEnteringNum(target, displayedSecondNum);
     }
-    // continue entering secondNum
+
+    // continue entering secondNum in display
     else if (displayedSecondNum.innerText != "###") {
-        
-        // when user types too many digits
-        if (displayedSecondNum.innerText.length >= digitsAllowed) {
-            displayOverflowMsg();
-        }
-        else {
-            displayedSecondNum.innerText += target.value;
-        }
-        return;
-    }
-    else {
-        console.log("error from entering number unaccounted for");
+        continueEnteringNum(target, displayedSecondNum);
     }
 }
+
+// HELPERS
+function startEnteringNum(target, num) {
+    
+    if (target.value != ".") {
+        num.innerText = target.value;
+    }
+
+    // ensure decimal follows a number
+    else if (target.value == ".") {
+        target.disabled = true;
+        num.innerText = "0" + target.value;
+    }
+}
+function continueEnteringNum(target, num) {
+    
+    // when user types too many digits
+    if (num.innerText.length >= digitsAllowed) {
+        displayOverflowMsg();
+        return;
+    }
+
+    if (target.value == ".") {
+        target.disabled = true;
+    }
+
+    num.innerText += target.value;
+}
+
 
 function handleOperator(target) {
 
@@ -120,14 +114,14 @@ function handleOperator(target) {
         clearDisplay();
     }
 
-    // when args[] firstNum only
+    // when args[0] contains result from calculate()
     else if ( (args[0] != undefined) && 
     ((args[1] == undefined) || (args[1]=="")) ) {
         args[1] = target.value;
         displayedOperator.innerText = target.value;
     }
     
-    // when secondNum is in display and args[] contains up to operator
+    // when secondNum is in display and args[1] contains operator
     else if ( (args[2] == undefined || args[2] == "") && 
     (/\d/.test(displayedSecondNum.innerText)) ) {
         
@@ -138,6 +132,7 @@ function handleOperator(target) {
             displayOverflowMsg();
             return;
         }
+
         let answerStr = operate(args[0], args[1], args[2]);
         clearDisplay();
         displayAnswer(answerStr);
@@ -147,6 +142,7 @@ function handleOperator(target) {
 }
 
 function handleEquals() {
+    
     // when args[] contains firstNum and operator, while secondNum is in display
     if ( (args[2] == undefined || args[2] == "") && 
     (displayedSecondNum.innerText != "###")) {
@@ -163,35 +159,9 @@ function handleEquals() {
         clearDisplay();
         displayAnswer(answerStr);
     }
+    
     // (edge case) when equals is pressed before secondNum is in display
     else if (displayedSecondNum.innerText == "###" ) {
-        clearDisplay();
-    }
-}
-
-function handleDelete(target) {
-    if (target.id == "backspace") {
-        // delete last entry for firstNum
-        if (displayedOperator.innerText == "?") {
-            displayedFirstNum.innerText = 
-            displayedFirstNum.innerText.slice(0, -1);
-            if (/[1-9]/.test(args[0])) {
-                args[0] = args[0].toString().slice(0, -1);
-            }
-        }
-        // delete operator
-        else if ( (displayedOperator.innerText != "?") &&
-        (displayedSecondNum == "###") ) {
-            displayedOperator.innerText == "?";
-            args[1] = "";
-        }
-        // delete last entry for secondNum
-        else if (displayedSecondNum.innerText != "###") {
-            displayedSecondNum.innerText = 
-            displayedSecondNum.innerText.slice(0, -1);
-        }
-    }
-    else if (target.id == "clear") {
         clearDisplay();
     }
 }
@@ -228,6 +198,7 @@ function checkSize(possibleFloat) {
     }
 
     else if (!Number.isInteger(possibleFloat)) {
+        
         let integerPartLen = possibleFloat.toString().match(/^[^.]*/).length;
         
         if (integerPartLen > digitsAllowed) {
@@ -246,24 +217,47 @@ function checkSize(possibleFloat) {
 
 function displayAnswer (answerStr) {
 
-            displayedFirstNum.innerText = answerStr;
-            args[0] = answerStr;
-            args[1] = "";
-            args[2] = "";
+    displayedFirstNum.innerText = answerStr;
+    args[0] = answerStr;
+    args[1] = "";
+    args[2] = "";
 } 
 
-function displayOverflowMsg() {
-    clearDisplay();
-    displayedFirstNum.innerText = "###";
-    displayedOperator.innerHTML = "&#128565";
-    displayedSecondNum.innerText = "###";
-}
-
 function clearDisplay() {
+    args = new Array(3);
     displayedFirstNum.innerText = "###";
     displayedOperator.innerText = "?";
     displayedSecondNum.innerText = "###";
-
-    args = new Array(3);
 }
 
+function displayOverflowMsg() {
+    clearDisplay();
+    displayedOperator.innerText = "😵";
+}
+
+function handleDelete(target) {
+    if (target.id == "backspace") {
+        // delete last entry for firstNum
+        if (displayedOperator.innerText == "?") {
+            displayedFirstNum.innerText = 
+            displayedFirstNum.innerText.slice(0, -1);
+            if (/[1-9]/.test(args[0])) {
+                args[0] = args[0].toString().slice(0, -1);
+            }
+        }
+        // delete operator
+        else if ( (displayedOperator.innerText != "?") &&
+        (displayedSecondNum == "###") ) {
+            displayedOperator.innerText == "?";
+            args[1] = "";
+        }
+        // delete last entry for secondNum
+        else if (displayedSecondNum.innerText != "###") {
+            displayedSecondNum.innerText = 
+            displayedSecondNum.innerText.slice(0, -1);
+        }
+    }
+    else if (target.id == "clear") {
+        clearDisplay();
+    }
+}
