@@ -5,6 +5,10 @@
     --pink: #df94c9;
 }
 
+body {
+    margin: 0;
+}
+
 .main.container {
     display: flex;
     justify-content: center;
@@ -25,7 +29,7 @@
     background: linear-gradient(0deg, var(--blue), var(--bluePurple), 
     var(--purple));
     height: 67%;
-    aspect-ratio: 0.67;
+    aspect-ratio: 2 / 3;
 }
 
 .display.container {
