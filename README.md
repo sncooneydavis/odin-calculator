@@ -22,7 +22,8 @@ Displayed result is rounded, such that all digits can be contained on the displa
 *`script.js`* calculator logic
 
 ## Preview
-
+![Preview 1](https://github.com/sncooneydavis/odin-calculator/preview1.png)
+![Preview 2](https://github.com/sncooneydavis/odin-calculator/preview2.png)
 
 
 
