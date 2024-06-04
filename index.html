@@ -4,21 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="./script.js" defer></script>
-    <style src="./style.css" rel="stylesheet"></style>
+    <link rel="stylesheet" href="./style.css"></link>
     <title>Calculate!</title>
 </head>
 <body>
     <div class="main container">
         <div class="calculator container">
+            
             <div class="display container">
-                <div id="displayed-firstNum">###</div>
-                <div id="displayed-operator">?</div>
-                <div id="displayed-secondNum">###</div>
-
+                <div id="displayed-firstNum" class="cssNotHighlighted">###</div>
+                <div id="displayed-operator" class="cssNotHighlighted">?</div>
+                <div id="displayed-secondNum" class="cssNotHighlighted">###</div>
             </div>
             
             <div class="button container">
-               
                 <div class="row-1">
                     <input type="button" class="number button" value="1">
                     <input type="button" class="number button" value="2">
@@ -51,8 +50,8 @@
                     <input type="button" class="bottom button" id="backspace" value="&#x232B">
                     <input type="button" class="bottom button" id="clear" value="&#9249">
                 </div>
-
             </div>
+
         </div>
     </div>
 </body>

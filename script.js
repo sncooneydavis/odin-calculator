@@ -3,9 +3,10 @@ const displayedFirstNum = document.querySelector("#displayed-firstNum");
 const displayedOperator = document.querySelector("#displayed-operator");
 const displayedSecondNum = document.querySelector("#displayed-secondNum");
 const buttonInput = document.querySelector(".button.container");
+const decimalBtn = document.querySelector(".decimal.button");
 
 // total digits of display 
-const digitsAllowed = 8;
+const digitsAllowed = 5;
 
 // hold args for operate(number + operator + number)
 let args = new Array(3);
@@ -47,19 +48,23 @@ function handleNumber(target) {
         if (displayedOperator.innerText == "😵") {
             clearDisplay();
         }
-
+        
+        highlight("FirstNum", "on");
         startEnteringNum(target, displayedFirstNum);
     }
 
     // continue entering firstNum in display
     else if ( (displayedFirstNum.innerText != "###") && 
     (displayedOperator.innerText == "?") ) {
+
         continueEnteringNum(target, displayedFirstNum);
     }
 
     // start entering secondNum in display
     else if (( displayedSecondNum.innerText == "###") &&
     (displayedOperator.innerText != "?") ) {
+        
+        highlight("SecondNum", "on");
         startEnteringNum(target, displayedSecondNum);
     }
 
@@ -97,8 +102,12 @@ function continueEnteringNum(target, num) {
     num.innerText += target.value;
 }
 
-
 function handleOperator(target) {
+
+    // reset decimal button
+    if (decimalBtn.disabled == true) {
+        decimalBtn.disabled = false;
+    }
 
      // when args[] is empty and firstNum is displayed
      if ( args[0] == undefined && (displayedFirstNum.innerText != "###") ) {
@@ -106,18 +115,22 @@ function handleOperator(target) {
         args[0] = displayedFirstNum.innerText;
         args[1] = target.value;
 
+        highlight("Operator", "on");
         displayedOperator.innerText = target.value;
     }
 
     // when args[] is empty and firstNum not displayed
-    if ( args[0] == undefined && (displayedFirstNum.innerText == "###") ) {
+    else if ( args[0] == undefined && (displayedFirstNum.innerText == "###") ) {
         clearDisplay();
     }
 
-    // when args[0] contains result from calculate()
+    // when args[0] contains result from operate()
     else if ( (args[0] != undefined) && 
     ((args[1] == undefined) || (args[1]=="")) ) {
+        
         args[1] = target.value;
+
+        highlight("Operator", "on");
         displayedOperator.innerText = target.value;
     }
     
@@ -135,6 +148,7 @@ function handleOperator(target) {
 
         let answerStr = operate(args[0], args[1], args[2]);
         clearDisplay();
+        highlight("FirstNum", "on");
         displayAnswer(answerStr);
         args[1] = target.value;
         displayedOperator.innerText = target.value;
@@ -157,6 +171,7 @@ function handleEquals() {
 
         let answerStr = operate(args[0], args[1], args[2]);
         clearDisplay();
+        highlight("FirstNum", "on");
         displayAnswer(answerStr);
     }
     
@@ -221,6 +236,11 @@ function displayAnswer (answerStr) {
     args[0] = answerStr;
     args[1] = "";
     args[2] = "";
+
+    // after operate() returns a decimal value
+    if (/\./.test(displayedFirstNum.innerText)) {
+        decimalBtn.disabled = true;
+    }
 } 
 
 function clearDisplay() {
@@ -228,11 +248,38 @@ function clearDisplay() {
     displayedFirstNum.innerText = "###";
     displayedOperator.innerText = "?";
     displayedSecondNum.innerText = "###";
+    decimalBtn.disabled = false;
+    highlight("FirstNum", "off");
+    highlight("Operator", "off");
+    highlight("SecondNum", "off");
 }
 
 function displayOverflowMsg() {
     clearDisplay();
     displayedOperator.innerText = "😵";
+}
+
+function highlight(arg, toggle) {
+    
+    let element;
+    if (arg == "FirstNum") {
+        element = displayedFirstNum;
+    }
+    else if (arg == "SecondNum") {
+        element = displayedSecondNum;
+    }
+    else if (arg == "Operator") {
+        element = displayedOperator;
+    }
+
+    if (toggle == "on") {
+        element.classList.add("cssHighlighted");
+        element.classList.remove("cssNotHighlighted");
+    }
+    else if (toggle == "off") {
+        element.classList.add("cssNotHighlighted");
+        element.classList.remove("cssHighlighted");
+    }
 }
 
 function handleDelete(target) {

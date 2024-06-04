@@ -1,0 +1,51 @@
+:root {
+    --blue: #8eb1e9;
+    --bluePurple: #928fe6;
+    --purple: #b38ad7;
+    --pink: #df94c9;
+}
+
+.main.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: radial-gradient(circle, black, midnightblue);
+    width: 100vw;
+    height: 100vh;
+
+}
+
+.calculator.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    border-radius: 16px;
+    background: linear-gradient(0deg, var(--blue), var(--bluePurple), 
+    var(--purple));
+    height: 67%;
+    aspect-ratio: 0.67;
+}
+
+.display.container {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 20%;
+    width: 85%;
+    border-radius: 8px;
+    background-color: white;
+}
+
+.display.container * {
+    font-family:'Courier New', Courier, monospace;
+    font-size: 4vh;
+}
+.cssNotHighlighted {
+    color: lavender;
+}
+
+.cssHighlighted {
+    color: slateblue;
+}
