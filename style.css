@@ -28,6 +28,8 @@ body {
     border-radius: 16px;
     background: linear-gradient(0deg, var(--blue), var(--bluePurple), 
     var(--purple));
+    min-width: 290px; 
+    max-width: 375px;
     width: 33%;
     aspect-ratio: 2 / 3;
 }
@@ -44,7 +46,7 @@ body {
 }
 
 .display.container * {
-    font-size: 3.8vh;
+    font-size: 3.8vmin;
 }
 .cssNotHighlighted {
     color: lavender;
@@ -58,6 +60,8 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
+    align-content: space-between;
+    max-height: 60%;
     width: 55%;
     height: 45%;
     gap: 10px;
@@ -71,12 +75,12 @@ body {
 
 .button .button {
     border: none;
-    height: 5vh;
-    width: 10vw;
+    height: 4.6vmin;
+    width: 10vmin;
     background-color: aliceblue;
     border-radius: 4px;
     color: midnightblue;
-    font-size: 2.5vh;
+    font-size: 2.5vmin;
     font-family: "Reddit Mono", monospace;
 }
 
@@ -85,11 +89,11 @@ body {
 }
 
 #clear {
-    font-size: 2.3vh;
+    font-size: 2.3vmin;
 }
 
 #backspace {
-    font-size: 4vh;
+    font-size: 4vmin;
 }
 
 .button:disabled {
