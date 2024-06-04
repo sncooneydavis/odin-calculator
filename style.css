@@ -28,7 +28,7 @@ body {
     border-radius: 16px;
     background: linear-gradient(0deg, var(--blue), var(--bluePurple), 
     var(--purple));
-    height: 67%;
+    width: 33%;
     aspect-ratio: 2 / 3;
 }
 
