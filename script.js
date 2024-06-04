@@ -90,7 +90,7 @@ function startEnteringNum(target, num) {
 function continueEnteringNum(target, num) {
     
     // when user types too many digits
-    if (num.innerText.length >= digitsAllowed) {
+    if (num.innerText.length > digitsAllowed) {
         displayOverflowMsg();
         return;
     }
@@ -298,10 +298,16 @@ function handleDelete(target) {
     if (target.id == "backspace") {
         // delete last entry for firstNum
         if (displayedOperator.innerText == "?") {
-            displayedFirstNum.innerText = 
-            displayedFirstNum.innerText.slice(0, -1);
-            if (/[1-9]/.test(args[0])) {
-                args[0] = args[0].toString().slice(0, -1);
+            // when only one number on display 
+            if (displayedFirstNum.innerText.length == 1) {
+                clearDisplay();
+            }
+            else {
+                displayedFirstNum.innerText = 
+                displayedFirstNum.innerText.slice(0, -1);
+                if (/[1-9]/.test(args[0])) {
+                    args[0] = args[0].toString().slice(0, -1);
+                }
             }
         }
 
