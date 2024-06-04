@@ -6,7 +6,7 @@ const buttonInput = document.querySelector(".button.container");
 const decimalBtn = document.querySelector(".decimal.button");
 
 // total digits of display 
-const digitsAllowed = 5;
+const digitsAllowed = 6;
 
 // hold args for operate(number + operator + number)
 let args = new Array(3);
@@ -133,6 +133,14 @@ function handleOperator(target) {
         highlight("Operator", "on");
         displayedOperator.innerText = target.value;
     }
+
+    // change existing operator
+    else if ((args[1] != undefined) && 
+    (displayedSecondNum.innerText == "###")) {
+        args[1] = target.value;
+        displayedOperator.innerText = target.value;
+
+    }
     
     // when secondNum is in display and args[1] contains operator
     else if ( (args[2] == undefined || args[2] == "") && 
@@ -149,6 +157,7 @@ function handleOperator(target) {
         let answerStr = operate(args[0], args[1], args[2]);
         clearDisplay();
         highlight("FirstNum", "on");
+        highlight("Operator", "on");
         displayAnswer(answerStr);
         args[1] = target.value;
         displayedOperator.innerText = target.value;
@@ -206,28 +215,30 @@ function operate(firstNum, operator, secondNum) {
 
 function checkSize(possibleFloat) {
     
-    if (Number.isInteger(possibleFloat) && 
-    possibleFloat.toString().length > digitsAllowed) {
-        displayOverflowMsg();
-        return;
-    }
+    if (Number.isInteger(possibleFloat)) {
+        if (possibleFloat.toString().length > digitsAllowed*2) {
+            displayOverflowMsg();
+            return;
+        }
+        // possibleFloat is both an integer and < digitsAllowed
+        return possibleFloat;
+    } 
 
     else if (!Number.isInteger(possibleFloat)) {
         
-        let integerPartLen = possibleFloat.toString().match(/^[^.]*/).length;
+        let integerPartLen = possibleFloat.toString().indexOf(".");
         
-        if (integerPartLen > digitsAllowed) {
+        if (integerPartLen >= digitsAllowed) {
             displayOverflowMsg();
             return;
         }
         // calc how many digits left for decimal places
         let spacesAvailable = digitsAllowed - integerPartLen;
+        console.log(spacesAvailable);
         let fixedFloat = possibleFloat.toFixed(spacesAvailable);
         // remove trailing zeros
         return fixedFloat.toString().replace(/(\.\d*?[1-9])0+$/, '$1');
     }
-    // possibleFloat is both an integer and < digitsAllowed
-    return possibleFloat;
 }
 
 function displayAnswer (answerStr) {
@@ -283,6 +294,7 @@ function highlight(arg, toggle) {
 }
 
 function handleDelete(target) {
+    
     if (target.id == "backspace") {
         // delete last entry for firstNum
         if (displayedOperator.innerText == "?") {
@@ -292,12 +304,13 @@ function handleDelete(target) {
                 args[0] = args[0].toString().slice(0, -1);
             }
         }
+
         // delete operator
-        else if ( (displayedOperator.innerText != "?") &&
-        (displayedSecondNum == "###") ) {
-            displayedOperator.innerText == "?";
+        else if ( (displayedOperator.innerText != "?") && (displayedSecondNum.innerText == "###") ) {
+            displayedOperator.innerText = "?";
             args[1] = "";
         }
+
         // delete last entry for secondNum
         else if (displayedSecondNum.innerText != "###") {
             displayedSecondNum.innerText = 

@@ -12,7 +12,8 @@
     background: radial-gradient(circle, black, midnightblue);
     width: 100vw;
     height: 100vh;
-
+    font-family: "Reddit Mono", monospace;  
+      
 }
 
 .calculator.container {
@@ -35,12 +36,11 @@
     height: 20%;
     width: 80%;
     border-radius: 8px;
-    background-color: white;
+    background-color: aliceblue;
 }
 
 .display.container * {
-    font-family:'Courier New', Courier, monospace;
-    font-size: 4vh;
+    font-size: 3.8vh;
 }
 .cssNotHighlighted {
     color: lavender;
@@ -65,12 +65,30 @@
     column-gap: 10px;
 }
 
-.button {
+.button .button {
     border: none;
     height: 5vh;
     width: 10vw;
+    background-color: aliceblue;
+    border-radius: 4px;
+    color: midnightblue;
+    font-size: 2.5vh;
+    font-family: "Reddit Mono", monospace;
 }
 
 .bottom {
     flex-basis: 55%;
+}
+
+#clear {
+    font-size: 2.3vh;
+}
+
+#backspace {
+    font-size: 4vh;
+}
+
+.button:disabled {
+    background-color: lightgray;
+    color: white;
 }
